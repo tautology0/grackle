@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <unistd.h>
 
 #define HEADER_END 0xA54F
 #define DICTIONARY_START 0xa5d
@@ -1037,6 +1038,10 @@ run_struct *adventure_status;
          }
       }
       if (set) printf("%s",objhere);
+      if (header->type == TYPE_BBC)
+      {
+         printf("\n");
+      }
       if (adventure_status->force_exits)
       {
          printf("\n");
@@ -1782,6 +1787,7 @@ int main(int argc, char **argv)
    char infilename[256];
    FILE *infile;
    int dump=0;
+   int startroom=0, opt;
    int i,j;
    char decoded[2048];
 
@@ -1797,8 +1803,31 @@ int main(int argc, char **argv)
    assignmemory(locc,sizeof(condition_struct), 512);
    assignmemory(messages, 255, 512);
 
-   strcpy(infilename,argv[1]);
-   if (argc>2 && !strcmp(argv[2],"dump")) dump=1;
+   while ((opt = getopt(argc, argv, "pls:")) != -1)
+   {
+      switch (opt)
+      {
+         case 'l':
+            dump=1;
+            break;
+         case 'p':
+            // Play - default behaviour do nowt
+            break;
+         case 's':
+            startroom=atoi(optarg);
+            break;
+         default:
+            fprintf(stderr, "Usage: %s [-p|-l] [-s room] file\n", argv[0]);
+            exit(1);
+      }
+   }
+   
+   if (optind >= argc)
+   {
+      fprintf(stderr, "No file name provided\n");
+      exit(1);
+   }
+   strcpy(infilename,argv[optind]);
 
    infile=fopen(infilename,"rb");
    if (infile == NULL)
@@ -1846,7 +1875,15 @@ int main(int argc, char **argv)
    printf("Reading room conditions: %x\n",header->loccptr);
    header->locc=readroomconditions(infile,header,locc,header->loccptr,header->lpcptr);
    printf("Reading start room\n");
-   header->startroom=readstartroom(infile,header,header->startptr);
+   if (header->type == TYPE_BBC)
+   {
+      header->startroom=1;
+   }
+   else
+   {   
+      header->startroom=readstartroom(infile,header,header->startptr);
+   }
+   if (startroom > 0) header->startroom=startroom;
 
    if (dump)
    {
