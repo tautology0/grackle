@@ -978,7 +978,19 @@ int length;
             strcpy(working2,pop());
             strcpy(working3,pop());
             // working4 exists to stop memory corruption on working
-            sprintf(working4,"(%s %s%s) ",working3,working,working2);
+            if (strcmp(directives[byte].name,"IN") == 0)
+            {
+               sprintf(working4,"(OBJECT: %s: \"%s\" %s ROOM:%s: \"%s\") ",
+                  working3,
+                  objects[find_object(atoi(working3),objects,header->objects)]->description,
+                  working,
+                  working2,
+                  rooms[find_room(atoi(working2),rooms,header->rooms)]->description);
+            }
+            else
+            {
+               sprintf(working4,"(%s %s%s) ",working3,working,working2);
+            }
             strcpy(working,working4);
          }
          if (directives[byte].returns)
@@ -1415,8 +1427,8 @@ int docmd;
             case (39): // AT
                param1=popint();
                param2=popint();
-               true=find_object(param1,objects,header->objects);
-               if (objects[true]->location == param2)
+               true=find_object(param2,objects,header->objects);
+               if (objects[true]->location == param1)
                {
                   pushint(1);
                }
