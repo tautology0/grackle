@@ -1788,7 +1788,7 @@ int main(int argc, char **argv)
    FILE *infile;
    int dump=0;
    int startroom=0, opt;
-   int i,j;
+   int i,j,type=0;
    char decoded[2048];
 
    header=calloc(1,sizeof(header_struct));
@@ -1803,7 +1803,7 @@ int main(int argc, char **argv)
    assignmemory(locc,sizeof(condition_struct), 512);
    assignmemory(messages, 255, 512);
 
-   while ((opt = getopt(argc, argv, "pls:")) != -1)
+   while ((opt = getopt(argc, argv, "pls:t:")) != -1)
    {
       switch (opt)
       {
@@ -1815,6 +1815,13 @@ int main(int argc, char **argv)
             break;
          case 's':
             startroom=atoi(optarg);
+            break;
+         case 't':
+            type=atoi(optarg);
+            if (type > 5)
+            {
+               printf("Unknown type: %optarg\n",type);
+            }
             break;
          default:
             fprintf(stderr, "Usage: %s [-p|-l] [-s room] file\n", argv[0]);
@@ -1836,7 +1843,11 @@ int main(int argc, char **argv)
       exit(1);
    }
 
-   header->type=detecttype(infile, header);
+   header->type=type;
+   if (type == 0)
+   {
+      header->type=detecttype(infile, header);
+   }
    printf("Type: %d\n",header->type);
    readheader(infile, header);
    /*printf("Header value for verbs %x\n", header->verbptr);
