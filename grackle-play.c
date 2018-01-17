@@ -318,7 +318,7 @@ FILE *infile;
    
    // Check it's C64 - the VSF size can be variable - so check first
    ptr = fseek(infile, 0, SEEK_SET);
-   if (fgetc(infile) == 'V')
+   if (fgetc(infile) == 'V' && fgetc(infile) == 'I')
    {
       int c64off = 0;
       ptr = fseek(infile, 0x37, SEEK_SET);
